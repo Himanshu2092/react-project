@@ -51,13 +51,11 @@ export default class PollAnswer extends React.Component {
 
   renderQuestions = () => {
     const { data } = this.state;
-    return data.map((quest, index) => {
-      return (
-        <Card actions={[this.renderAnswers(quest.answer_choices)]}>
-          <Meta title={quest.question_title} description={quest.question} />
-        </Card>
-      );
-    });
+    return data.map((quest, index) => (
+      <Card actions={[this.renderAnswers(quest.answer_choices)]}>
+        <Meta title={quest.question_title} description={quest.question} />
+      </Card>
+    ));
   };
 
   onChange = e => {
