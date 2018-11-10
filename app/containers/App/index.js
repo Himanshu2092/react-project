@@ -15,7 +15,7 @@ import Create from 'containers/Create/Loadable';
 import Poll from 'containers/Poll/Loadable';
 import Stats from 'containers/Stats/Loadable';
 import GlobalStyle from '../../global-styles';
-import { Routes } from '../../constants';
+import { Routes } from '../../config';
 
 export default function App() {
   return (

@@ -8,7 +8,7 @@ import React from 'react';
 
 import '../styles.css';
 import { Form, Input, Icon, Button } from 'antd';
-
+import { firebase } from '../../../config';
 const FormItem = Form.Item;
 
 /* eslint-disable react/prefer-stateless-function */
@@ -17,7 +17,6 @@ class CreateQuestion extends React.Component {
     const { form } = this.props;
     // can use data-binding to get
     const keys = form.getFieldValue('keys');
-    // We need at least one passenger
     if (keys.length === 1) {
       return;
     }
@@ -33,8 +32,7 @@ class CreateQuestion extends React.Component {
     // can use data-binding to get
     const keys = form.getFieldValue('keys');
     const nextKeys = keys.concat(keys.length);
-    // can use data-binding to set
-    // important! notify form to detect changes
+
     form.setFieldsValue({
       keys: nextKeys,
     });
@@ -45,6 +43,15 @@ class CreateQuestion extends React.Component {
     this.props.form.validateFields((err, values) => {
       if (!err) {
         console.log('Received values of form: ', values);
+        const db = firebase.firestore();
+        db.settings({
+          timestampsInSnapshots: true,
+        });
+        const questRef = db.collection('questions').add({
+          question_title: values.questionTitle,
+          question: values.question,
+          answer_choices: values.answerChoice,
+        });
       }
     });
   };
@@ -79,7 +86,7 @@ class CreateQuestion extends React.Component {
         required
         key={k}
       >
-        {getFieldDecorator(`names[${k}]`, {
+        {getFieldDecorator(`answerChoice[${k}]`, {
           validateTrigger: ['onChange', 'onBlur'],
           rules: [
             {
