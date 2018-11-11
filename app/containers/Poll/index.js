@@ -13,22 +13,30 @@ import { compose } from 'redux';
 import injectSaga from 'utils/injectSaga';
 import injectReducer from 'utils/injectReducer';
 import makeSelectPoll from './selectors';
-import reducer from './reducer';
-import saga from './saga';
+import { makeSelectStore } from '../App/selectors';
+import config from '../App/config';
+import reducer from '../App/reducer';
+import * as actions from '../App/actions';
 
 import HocHeader from '../../components/HocHeader';
 import PollAnswer from './Component/PollAnswer';
+import { firebase } from '../../config';
 
 /* eslint-disable react/prefer-stateless-function */
 export class Poll extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
   render() {
+    const { ...rest } = this.props;
     return (
       <div>
         <Helmet>
           <title>Poll</title>
           <meta name="description" content="Description of Poll" />
         </Helmet>
-        <PollAnswer />
+        <PollAnswer {...rest} />
       </div>
     );
   }
@@ -36,11 +44,13 @@ export class Poll extends React.Component {
 
 const mapStateToProps = createStructuredSelector({
   poll: makeSelectPoll(),
+  storeData: makeSelectStore(),
 });
 
 function mapDispatchToProps(dispatch) {
   return {
     dispatch,
+    save: (value, type) => dispatch(actions.save(value, type)),
   };
 }
 
@@ -49,11 +59,9 @@ const withConnect = connect(
   mapDispatchToProps,
 );
 
-const withReducer = injectReducer({ key: 'poll', reducer });
-const withSaga = injectSaga({ key: 'poll', saga });
+const withReducer = injectReducer({ key: config.reducer.name, reducer });
 
 export default compose(
   withReducer,
-  withSaga,
   withConnect,
 )(HocHeader(Poll, '2'));

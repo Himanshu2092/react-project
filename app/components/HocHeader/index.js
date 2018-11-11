@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 const { Header, Content } = Layout;
 
 function HocHeader(WrappedComponent, key) {
-  class HOC extends React.PureComponent {
+  class HOC extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
@@ -23,17 +23,16 @@ function HocHeader(WrappedComponent, key) {
     handle = item => {
       let { selected } = this.state;
       selected = [];
-      const index = selected.findIndex(x => x === item.key);
-      if (index === -1) {
-        selected.push(item.key);
-        this.setState({
-          selected,
-        });
-      }
+
+      selected.push(item.key);
+      this.setState({
+        selected,
+      });
     };
 
     render() {
       const { selected } = this.state;
+      const { ...rest } = this.props;
       return (
         <div>
           <Layout className="layout">
@@ -45,7 +44,6 @@ function HocHeader(WrappedComponent, key) {
                 defaultSelectedKeys={selected}
                 style={{ lineHeight: '64px' }}
                 onClick={this.handle}
-                // selectedKeys={selected}
               >
                 <Menu.Item key="1">
                   <Link to="/">Create</Link>
@@ -60,7 +58,7 @@ function HocHeader(WrappedComponent, key) {
             </Header>
             <Content style={{ padding: '0 50px', margin: '16px 0' }}>
               <div style={{ background: '#fff', padding: 24, minHeight: 280 }}>
-                <WrappedComponent />
+                <WrappedComponent {...rest} />
               </div>
             </Content>
           </Layout>

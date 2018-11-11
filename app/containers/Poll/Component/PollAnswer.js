@@ -20,33 +20,53 @@ const RadioButton = Radio.Button;
 export default class PollAnswer extends React.Component {
   constructor(props) {
     super(props);
+    const { storeData } = this.props;
     this.state = {
-      data: [],
+      data: storeData.questionDetails,
       selectedAnswer: '',
     };
   }
 
-  createData = (id, obj) => {
-    const { data } = this.state;
-    data.push({ id, ...obj });
-    this.setState({
-      data,
-    });
-  };
-
   componentDidMount() {
-    const db = firebase.firestore();
-    const self = this;
-    db.collection('questions')
-      .get()
-      .then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-          const obj = doc.data() || {};
-          self.createData(doc.id, obj);
-          // doc.data() is never undefined for query doc snapshots
-          console.log(doc.id, ' => ', doc.data());
-        });
+    const { storeData, save } = this.props;
+    if (storeData.questionDetails.length > 0) {
+      this.setState({
+        data: storeData.questionDetails,
       });
+    } else {
+      const db = firebase.firestore();
+      db.settings({
+        timestampsInSnapshots: true,
+      });
+
+      let questData = [];
+      let questions = db
+        .collection('questions')
+        .where('delete', '==', 'false')
+        .get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            let questObj = {
+              id: doc.id,
+              ...doc.data(),
+            };
+
+            questData.push(questObj);
+          });
+          save(questData, 'add');
+        });
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { storeData } = this.props;
+    if (storeData.questionDetails != nextProps.storeData.questionDetails) {
+      if (nextProps.storeData.questionDetails.length > 0) {
+        this.setState({
+          data: nextProps.storeData.questionDetails,
+        });
+      }
+    }
   }
 
   renderQuestions = () => {
@@ -59,6 +79,40 @@ export default class PollAnswer extends React.Component {
   };
 
   onChange = e => {
+    const { storeData, save } = this.props;
+    const db = firebase.firestore();
+    db.settings({
+      timestampsInSnapshots: true,
+    });
+    if (storeData.questionDetails.length > 0) {
+      const questRef = db
+        .collection('questions')
+        .doc(
+          storeData.questionDetails[0] ? storeData.questionDetails[0].id : '1',
+        );
+
+      questRef.get().then(snapshot => {
+        if (snapshot.exists) {
+          let value = +e.target.value;
+
+          let selectedIndex = storeData.questionDetails[0].answer_choices.findIndex(
+            x => x.key == value,
+          );
+          if (selectedIndex != -1) {
+            storeData.questionDetails[0].answer_choices[
+              selectedIndex
+            ].answered.push('user1');
+          }
+
+          questRef.update({ ...storeData.questionDetails[0] }).then(() => {
+            let questData = [];
+            questData.push(storeData.questionDetails[0]);
+            save(questData, 'delete');
+          });
+        }
+      });
+    }
+
     this.setState({
       selectedAnswer: e.target.value,
     });
@@ -66,12 +120,12 @@ export default class PollAnswer extends React.Component {
 
   renderAnswers = answerChoices => {
     const tempArray = answerChoices.map((answer, index) => {
-      const value = `value${index}`;
+      const value = `${index + 1}`;
       const option = String.fromCharCode(65 + index);
       return (
         <RadioButton value={value}>
           <Tag className="tagstyle">{option}</Tag>
-          {answer}
+          {answer.choice}
         </RadioButton>
       );
     });

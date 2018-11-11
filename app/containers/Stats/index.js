@@ -13,8 +13,10 @@ import { compose } from 'redux';
 import injectSaga from 'utils/injectSaga';
 import injectReducer from 'utils/injectReducer';
 import makeSelectStats from './selectors';
-import reducer from './reducer';
-import saga from './saga';
+import { makeSelectStore } from '../App/selectors';
+import * as actions from '../App/actions';
+import reducer from '../App/reducer';
+import config from '../App/config';
 
 import HocHeader from '../../components/HocHeader';
 import Statistics from './Component/Statistics';
@@ -53,11 +55,9 @@ const withConnect = connect(
   mapDispatchToProps,
 );
 
-const withReducer = injectReducer({ key: 'stats', reducer });
-const withSaga = injectSaga({ key: 'stats', saga });
+const withReducer = injectReducer({ key: config.reducer.name, reducer });
 
 export default compose(
   withReducer,
-  withSaga,
   withConnect,
 )(HocHeader(Stats, '3'));

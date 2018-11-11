@@ -1,6 +1,6 @@
 /*
  *
- * Create actions
+ *App actions
  *
  */
 

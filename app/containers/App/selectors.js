@@ -1,10 +1,22 @@
 import { createSelector } from 'reselect';
+import { initialState } from './reducer';
+import config from './config';
 
-const selectRouter = state => state.get('router');
+/**
+ * Direct selector to the create state domain
+ */
 
-const makeSelectLocation = () =>
-  createSelector(selectRouter, routerState =>
-    routerState.get('location').toJS(),
-  );
+const selectAppDomain = state => state.get(config.reducer.name, initialState);
 
-export { makeSelectLocation };
+/**
+ * Other specific selectors
+ */
+
+/**
+ * Default selector used by Create
+ */
+
+const makeSelectStore = () =>
+  createSelector(selectAppDomain, substate => substate.toJS());
+
+export { selectAppDomain, makeSelectStore };
